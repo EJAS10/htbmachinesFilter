@@ -34,6 +34,7 @@ function helpPanel() {
 	echo -e "\t${purpleColour}o)${endColour} Buscar por Sistema operativo"
 	echo -e "\t\t${greenColour}w)${endColour} Windows"
 	echo -e "\t\t${greenColour}l)${endColour} Linux"
+	echo -e "\t${purpleColour}s)${endColour} Buscar por SKILL"
 	echo -e "\t${purpleColour}h)${endColour} Help"
 }
 
@@ -164,12 +165,24 @@ function FindByOSandDifficulty(){
 	fi
 }
 
+function FindBySkill(){
+	Skill=$1
+	skill_result=$(cat bundle.js | grep "skills: " | grep "$Skill" -i)
+
+	if [ "$skill_result" ]; then
+		echo -e "\n [+] Representando las maquinas con la skill $Skill:\n"
+		cat bundle.js | grep "skills: " -B 6 | grep "sqli" -i -B 6 | grep "name: " | tr -d '"' | tr -d ',' | awk 'NF{print $NF}' | column
+	else
+		echo -e "\n [!] El sistema ($os) o la dificultad ($difficulty) no existen"
+	fi
+}
+
 #indicadores
 declare -i parameter_counter=0
 declare -i chivato_difficulty=0
 declare -i chivato_os=0
 
-while getopts "m:u:i:y:d:o:h" arg; do
+while getopts "m:u:i:y:d:o:s:h" arg; do
   case $arg in
     m) machineName=$OPTARG; let parameter_counter+=1;;
     u) let parameter_counter+=2;;
@@ -177,6 +190,7 @@ while getopts "m:u:i:y:d:o:h" arg; do
     y) machineName=$OPTARG; let parameter_counter+=4;;
     d) difficulty=$OPTARG; chivato_difficulty=1; let parameter_counter+=5;;
     o) os=$OPTARG; chivato_os=1; let parameter_counter+=6;;
+    s) skill=$OPTARG; let parameter_counter+=7;;
     h) ;;
   esac
 done
@@ -196,6 +210,8 @@ elif [ $parameter_counter -eq 6 ]; then
    FindByOS $os
 elif [ $chivato_difficulty -eq 1 ] && [ $chivato_os -eq 1 ]; then
    FindByOSandDifficulty $os $difficulty
+elif [ $parameter_counter -eq 7 ]; then
+   FindBySkill "$skill"
 else
    helpPanel
 fi
