@@ -96,13 +96,82 @@ function MartingalaFt(){
 }
 
 function RevLabouchereFt(){
-	echo "probando labourchere"
+	echo "${greenColour}[+]${endColour} Dinero actual: ${blueColour}$money DOP${endColour}"
+	echo -ne "${greenColour}[>]${endColour} A que deseas apostas continuamente? \n1) impar, \n2) par \n-> " && read type_bet
+	echo -e "${greenColour}[+]${endColour} Comenzamos con la secuencia [1 2 3 4] "
+	declare -a secuencia=(1 2 3 4)
+	declare -i bet=0
+	tput civis
+	while true; do
+		if [ "${#secuencia[@]}" -eq 1 ]; then
+			#tenemos solo un valor
+			bet=${secuencia[0]}
+		elif [ "${#secuencia[@]}" -gt 1 ]; then 
+			#tenemos varios valores
+			bet=$((${secuencia[0]}+${secuencia[-1]}))
+		else
+			#No hay valores, esto no debe ocurrir
+			secuencia=(1 2 3 4)
+			echo -e "${purpleColour}[>]${endColour} Secuencia reiniciada ${blueColour}[${secuencia[@]}]${endColour}"
+		fi
+
+		if [ "$bet" -gt 0 ] && [ "$money" -ge "$bet" ]; then 
+			#tenemos dinero
+			money=$(($money-$bet))
+			echo -e "${yellowColour}[+]${endColour} La apuesta sera de ${blueColour}$bet DOP${endColour} Nos queda la secuencia [${secuencia[@]}]"
+			echo -e "${yellowColour}[+]${endColour} Ahora te quedan ${blueColour}$money DOP${endColour}"
+		else
+			#No hay dinero
+			echo -e "${redColour}[!]${endColour} No money, No mami. \n Tienes ${blueColour}$money DOP${endColour}. bye bye"
+			tput cnorm && exit 0
+		fi
+
+		random_number=$(($RANDOM % 37))
+		jugada_mala=false
+
+		if [ $type_bet -eq 2 ]; then
+			if [ $((random_number % 2)) -eq 0 ]; then
+				if [ $random_number -eq 0 ]; then
+					jugada_mala=true
+				else 
+					secuencia+=($bet)
+					reward=$(($bet*2))
+					money=$(($money+$reward))
+				fi
+			else
+				jugada_mala=true
+			fi
+		elif [ $type_bet -eq 1 ]; then
+			if [ $((random_number % 2)) -eq 0 ]; then
+				jugada_mala=true
+			else
+				secuencia+=($bet)
+				reward=$(($bet*2))
+				money=$(($money+$reward))			
+			fi
+		else
+			echo -e "\n${redColour}[!]${endColour} El typo de apuesta ($type_bet) es incorrecto" 
+			tput cnorm && exit 1
+		fi
+
+		if [ "$jugada_mala" == "true" ]; then
+			echo -e "${redColour}[!]${endColour} Perdiste la apuesta, salio el numero${blueColour}($random_number)${endColour}"
+			unset secuencia[0]
+			unset secuencia[-1] 2> /dev/null
+			secuencia=(${secuencia[@]})
+		else
+			echo -e "${greenColour}[+]${endColour} Ganaste!!!, salio el numero${blueColour}($random_number)${endColour}.\nAhora tienes ${blueColour}$money DOP${endColour}"
+		fi
+			echo -e "${yellowColour}[>]${endColour} La nueva secuencia es ${blueColour}[${secuencia[@]}]${endColour}"
+
+		sleep 1
+		done
 }
 
 while getopts "m:t:h" arg; do
   case $arg in
     m) money=$OPTARG;;
-	t) technique=$OPTARG;;
+    t) technique=$OPTARG;;
     h) helpPanel;;
   esac
 done
