@@ -14,6 +14,7 @@ function ctrl_c(){
 	 echo -e "${redColour}[!] Saliendo...${endColour}"
 	 tput cnorm && exit 1
 }
+
 #Ctrl+C
 trap ctrl_c INT
 
@@ -101,8 +102,18 @@ function RevLabouchereFt(){
 	echo -e "${greenColour}[+]${endColour} Comenzamos con la secuencia [1 2 3 4] "
 	declare -a secuencia=(1 2 3 4)
 	declare -i bet=0
+	declare -i initial_money=$money
+	declare -i rewar_is_morethan_fifty=0
+
 	tput civis
 	while true; do
+		if [ "$(($money-$initial_money))" -ge 50 ] && [ "$rewar_is_morethan_fifty" -eq 0 ]; then
+			rewar_is_morethan_fifty=1
+			secuencia=(1 2 3 4)
+		elif [ "$money" -lt "$initial_money" ] && [ "$rewar_is_morethan_fifty" -eq 1 ]; then
+			rewar_is_morethan_fifty=0			
+		fi
+
 		if [ "${#secuencia[@]}" -eq 1 ]; then
 			#tenemos solo un valor
 			bet=${secuencia[0]}
