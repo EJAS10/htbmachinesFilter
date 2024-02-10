@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 calculate_subnet_mask() {
     local cidr="$1"
     local mask=""
@@ -14,12 +13,10 @@ calculate_subnet_mask() {
     echo "$((2#${mask:0:8}))"."$((2#${mask:8:8}))"."$((2#${mask:16:8}))"."$((2#${mask:24:8}))"
 }
 
-
 calculate_total_hosts() {
     local cidr="$1"
     echo "$((2**(32-cidr))-2)"
 }
-
 
 if [[ $# -ne 2 ]]; then
     echo "Uso: $0 <ip_address> <CIDR>"
@@ -28,7 +25,6 @@ fi
 
 ip_address="$1"
 cidr="$2"
-
 
 if ! [[ "$ip_address" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
     echo "Dirección IP inválida."
@@ -52,15 +48,20 @@ for (( i=0; i<4; i++ )); do
     fi
 done
 
+broadcast_address=$(ipcalc -nb "$ip_address/$cidr" | grep -i 'broadcast' | cut -d'=' -f2 | awk '{print $1}')
+
 first_address="${network_address%.*}.1"
 last_address="${network_address%.*}.254"
 
 total_hosts=$(calculate_total_hosts "$cidr")
 
-echo "Dirección de red: $network_address"
+# Mostrando resultados
+echo "Dirección de red (Network ID): $network_address"
+echo "Dirección de broadcast (Broadcast Address): $broadcast_address"
 echo "Máscara de subred: $subnet_mask"
 echo "Rango de direcciones IP: $first_address - $last_address"
 echo "Número total de hosts: $total_hosts"
+
 echo "--------------------------------------------------------"
 echo "CIRD 1-8 sin clase Subnet x.0.0.0"
 echo "CIRD 9-16 Clase A Subnet 255.x.0.0"
